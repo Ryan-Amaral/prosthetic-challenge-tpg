@@ -36,7 +36,6 @@ def runAgent(args):
     state.extend([0]*19)
     numRandFrames = random.randint(0,10)
     curAction = [0.2]*19 # start with all muscles barely activated
-    stepSize = 0.05
     for i in range(300): # frame loop
         if i < numRandFrames:
             _, _, isDone, _ = env.step(env.action_space.sample())
@@ -44,16 +43,11 @@ def runAgent(args):
 
         act = agent.act(state)
         for i in range(19):
-            curChange = 0
-            if act[i] > 0.333:
-                curAction[i] += stepSize
-                if curAction[i] > 1:
-                    curAction[i] = 1
-            elif act[i] < -.333:
-                curAction[i] -= stepSize
-                if curAction[i] < -1:
-                    curAction[i] = -1
-        
+            curAction[i] += act[i]
+            if curAction[i] < 0:
+                curAction[i] = 0
+            elif curAction[i] > 1:
+                curAction[i] = 1
         # feedback from env
         state, reward, isDone, debug = env.step(curAction)
         state.extend(curAction) # feedback action, because sequence is important
@@ -74,9 +68,9 @@ def limit_cpu():
     p = psutil.Process(os.getpid())
     p.nice(10)
 
-trainer = TpgTrainer(actions=19, actionRange=(-1.0,1.0,1.0), teamPopSizeInit=360)
+trainer = TpgTrainer(actions=19, actionRange=(-0.4,0.4,0.02), teamPopSizeInit=500)
 
-processes = 1
+processes = 3
 pool = mp.Pool(processes=processes, initializer=limit_cpu)
 man = mp.Manager()
 
