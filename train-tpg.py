@@ -27,9 +27,9 @@ def runAgent(args):
         print('Agent #' + str(agent.getAgentNum()) + ' can skip.')
         scoreList.append((agent.getUid(), agent.getOutcomes()))
         return
-    
+
     env = ProstheticsEnv(visualize=False)
-    
+
     score = 0
     
     state = env.reset()
@@ -68,7 +68,8 @@ def limit_cpu():
     p = psutil.Process(os.getpid())
     p.nice(10)
 
-trainer = TpgTrainer(actions=19, actionRange=(-0.4,0.4,0.02), teamPopSizeInit=500)
+
+trainer = TpgTrainer(actions=19, actionRange=(-0.4,0.4,0.02), teamPopSizeInit=360)
 
 processes = 3
 pool = mp.Pool(processes=processes, initializer=limit_cpu)
@@ -85,7 +86,7 @@ while True: # do generations with no end
     
     pool.map(runAgent, 
         [(agent, scoreList)
-        for agent in trainer.getAllAgents(skipTasks=[])])
+        for agent in trainer.getAllAgents(skipTasks=[], noRef=True)])
     
     # apply scores
     trainer.applyScores(scoreList)
@@ -97,6 +98,10 @@ while True: # do generations with no end
     # save model after every gen
     with open('saved-model-1.pkl','wb') as f:
         pickle.dump(trainer,f)
+
+    # save best agent each generation
+    with open('best-agent.pkl','wb') as f:
+        pickle.dump(trainer.getBestAgent(), f)
         
     print(chr(27) + "[2J")
     print('Time So Far (Seconds): ' + str(time.time() - tStart))
