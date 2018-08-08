@@ -95,15 +95,14 @@ while True: # do generations with no end
     scoreList = man.list()
     
     pool.map(runAgent, 
-        [(agent, scoreList, 0.1)
-        for agent in trainer.getAllAgents(skipTasks=[], noRef=True)])
+        [(agent, scoreList, 0.02)
+        for agent in trainer.getAllAgents(noRef=True)])
     
     # apply scores
     trainer.applyScores(scoreList)
-    scoreStats = trainer.generateScoreStats()
+    trainer.evolve() 
+    scoreStats = trainer.scoreStats
     allScores.append((trainer.curGen, scoreStats['min'], scoreStats['max'], scoreStats['average']))
-
-    trainer.evolve() # go into next gen
     
     # save model after every gen
     with open('saved-model-1.pkl','wb') as f:
