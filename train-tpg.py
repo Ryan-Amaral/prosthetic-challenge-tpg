@@ -20,7 +20,8 @@ Args:
 """
 def runAgent(args):
     agent = args[0]
-    scoreList = args[1] 
+    scoreList = args[1]
+    step = args[2]
     
     # skip if task already done by agent
     if agent.taskDone():
@@ -35,20 +36,20 @@ def runAgent(args):
     state = env.reset(project=False)
     state = obsTrans(state)
     state.extend([0]*19)
-    numRandFrames = random.randint(0,10)
-    curAction = [0.2]*19 # start with all muscles barely activated
+    curAction = [0]*19 # start with all muscles barely activated
     for i in range(300): # frame loop
-        if i < numRandFrames:
-            _, _, isDone, _ = env.step(env.action_space.sample())
-            continue
-
         act = agent.act(state)
         for i in range(19):
-            curAction[i] += act[i]
+            if act[i] > 0.333:
+                curAction[i] += step
+            elif act[i] < -0.333:
+                curAction[i] -= step
+
             if curAction[i] < 0:
                 curAction[i] = 0
             elif curAction[i] > 1:
                 curAction[i] = 1
+
         # feedback from env
         state, reward, isDone, debug = env.step(curAction, project=False)
         state = obsTrans(state)
@@ -78,7 +79,7 @@ def obsTrans(obs):
             trueObs.append(newObs[i][j])
     return trueObs
 
-trainer = TpgTrainer(actions=19, randSeed=1, actionRange=(-0.4,0.4,0.02), teamPopSizeInit=360)
+trainer = TpgTrainer(actions=19, randSeed=1, actionRange=(-1.0,1.0,0.7), teamPopSizeInit=360)
 
 processes = 3
 pool = mp.Pool(processes=processes, initializer=limit_cpu)
@@ -94,7 +95,7 @@ while True: # do generations with no end
     scoreList = man.list()
     
     pool.map(runAgent, 
-        [(agent, scoreList)
+        [(agent, scoreList, 0.1)
         for agent in trainer.getAllAgents(skipTasks=[], noRef=True)])
     
     # apply scores
