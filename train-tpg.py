@@ -100,7 +100,7 @@ while True: # do generations with no end
     
     # apply scores
     trainer.applyScores(scoreList)
-    trainer.evolve() 
+    trainer.evolve(fitShare=False, tasks=[]) 
     scoreStats = trainer.scoreStats
     allScores.append((trainer.curGen, scoreStats['min'], scoreStats['max'], scoreStats['average']))
     
