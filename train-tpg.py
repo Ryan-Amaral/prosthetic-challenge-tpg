@@ -42,9 +42,12 @@ def runAgent(args):
     state = env.reset(project=False)
     state = obsTrans(state)
     state.extend([0]*19)
-    curAction = [0]*19 # start with all muscles barely activated
+    curAction = [0]*19
     for i in range(300): # frame loop
         act = agent.act(state)
+        if not isinstance(act, list):
+            act = [0]*19
+            print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHhhhhhhhhhhhhhhh!!!!!!!!')
         for i in range(19):
             if act[i] > 0.333:
                 curAction[i] += step
@@ -81,7 +84,7 @@ if options.cont:
     with open('saved-model-1.pkl', 'rb') as f:
         trainer = pickle.load(f)
 else:
-    trainer = TpgTrainer(actions=19, randSeed=1, actionRange=(-1.0,1.0,0.7), teamPopSizeInit=360)
+    trainer = TpgTrainer(actions=19, actionRange=(-1.0,1.0,0.35), teamPopSizeInit=500)
 
 processes = 3
 pool = mp.Pool(processes=processes, initializer=limit_cpu)
