@@ -84,10 +84,10 @@ if options.cont:
     with open('saved-model-1.pkl', 'rb') as f:
         trainer = pickle.load(f)
 else:
-    trainer = TpgTrainer(actions=19, actionRange=(-1.0,1.0,0.35), teamPopSizeInit=500)
+    trainer = TpgTrainer(actions=19, actionRange=(-1.0,1.0,0.35), teamPopSize=360, maxProgramSize=256)
 
-processes = 3
-pool = mp.Pool(processes=processes, initializer=limit_cpu)
+processes = 7
+pool = mp.Pool(processes=processes, maxtasksperchild=2)
 man = mp.Manager()
 
 allScores = [] # track all scores each generation
@@ -100,7 +100,7 @@ while True: # do generations with no end
     scoreList = man.list()
     
     pool.map(runAgent, 
-        [(agent, scoreList, 0.02)
+        [(agent, scoreList, 0.05)
         for agent in trainer.getAllAgents(noRef=True)])
     
     # apply scores
@@ -114,8 +114,8 @@ while True: # do generations with no end
         pickle.dump(trainer,f)
 
     # save best agent each generation
-    with open('best-agent.pkl','wb') as f:
-        pickle.dump(trainer.getBestAgent(), f)
+    #with open('best-agent.pkl','wb') as f:
+    #    pickle.dump(trainer.getBestAgent(tasks=[]), f)
         
     print(chr(27) + "[2J")
     print('Time So Far (Seconds): ' + str(time.time() - tStart))
