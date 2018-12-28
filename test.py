@@ -8,7 +8,7 @@ def obsTrans(obs):
             trueObs.append(newObs[i][j])
     return trueObs
 
-env = ProstheticsEnv(visualize=False)
+env = ProstheticsEnv(visualize=True)
 obs = env.reset(project=False)
 """obsStr = '['
 for key in obs.keys():
@@ -23,11 +23,14 @@ for key in obs.keys():
 obsStr = obsStr[:-1] + ']'"""
 
 score = 0
+actionVect = [0]*19
 for i in range(300):
-    obs, reward, done, info = env.step([.5]*19, project=False)
-    print(len(obsTrans(obs)))
+    obs, reward, done, info = env.step(actionVect, project=False)
+    #print(len(obsTrans(obs)))
     score += reward
     if done:
         break
+    for i in range(len(actionVect)):
+        actionVect[i] += 0.02
 print('Score: ' + str(score))
 env.close()
